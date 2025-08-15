@@ -20,6 +20,8 @@ The Web Page Analyzer is a robust web application that performs comprehensive an
 
 ## Architecture
 
+![Architecture Diagram](docs/web-page-analyzer-archi-diagram.jpg)
+
 The application follows Go best practices with a clean, modular architecture:
 
 ```
