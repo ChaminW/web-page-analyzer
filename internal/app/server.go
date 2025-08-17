@@ -4,7 +4,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
-	"github.com/chaminw/web-page-analyzer/internal/api"
+	"web-page-analyzer/internal/api"
+	"web-page-analyzer/internal/middleware"
 )
 
 type Server struct {
@@ -23,5 +24,10 @@ func NewServer(logger *logrus.Logger) *Server {
 }
 
 func (s *Server) setupRoutes() {
+	// Register middlewares
+	s.Router.Use(middleware.LoggingMiddleware(s.logger))
+	s.Router.Use(middleware.RecoveryMiddleware(s.logger))
+
+	// Register routes
 	s.Router.HandleFunc("/analyze", api.AnalyzeHandler).Methods("POST")
 }
