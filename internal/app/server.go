@@ -4,8 +4,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
-	"web-page-analyzer/internal/api"
-	"web-page-analyzer/internal/middleware"
+	"github.com/chaminw/web-page-analyzer/internal/api"
+	"github.com/chaminw/web-page-analyzer/internal/middleware"
+	"github.com/chaminw/web-page-analyzer/internal/services"
 )
 
 type Server struct {
@@ -19,8 +20,18 @@ func NewServer(logger *logrus.Logger) *Server {
 		logger: logger,
 	}
 
+	s.setupServices()
 	s.setupRoutes()
 	return s
+}
+
+func (s *Server) setupServices() {
+	// Create service instances
+	urlAnalyzerService := services.NewURLAnalyzerService()
+	
+	// Wire up services to API handlers
+	api.SetLogger(s.logger)
+	api.SetURLAnalyzerService(urlAnalyzerService)
 }
 
 func (s *Server) setupRoutes() {
