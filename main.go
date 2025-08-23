@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
 	"github.com/chaminw/web-page-analyzer/internal/app"
 
 	"github.com/sirupsen/logrus"
@@ -20,7 +21,7 @@ func main() {
 	server := app.NewServer(logger)
 
 	httpServer := &http.Server{
-		Addr:         ":8089",
+		Addr:         ":8080",
 		Handler:      server.Router,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,

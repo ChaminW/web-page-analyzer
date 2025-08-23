@@ -13,15 +13,15 @@ import (
 )
 
 type Server struct {
-	Router *mux.Router
-	logger *logrus.Logger
+	Router   *mux.Router
+	logger   *logrus.Logger
 	template *template.Template
 }
 
 func NewServer(logger *logrus.Logger) *Server {
 	s := &Server{
-		Router: mux.NewRouter(),
-		logger: logger,
+		Router:   mux.NewRouter(),
+		logger:   logger,
 		template: template.Must(template.ParseGlob("web/templates/*.html")),
 	}
 
@@ -32,8 +32,8 @@ func NewServer(logger *logrus.Logger) *Server {
 
 func (s *Server) setupServices() {
 	// Create service instances
-	urlAnalyzerService := services.NewURLAnalyzerService()
-	
+	urlAnalyzerService := services.NewURLAnalyzerService(s.logger)
+
 	// Wire up services to API handlers
 	api.SetLogger(s.logger)
 	api.SetURLAnalyzerService(urlAnalyzerService)

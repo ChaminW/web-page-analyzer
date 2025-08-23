@@ -10,16 +10,25 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/chaminw/web-page-analyzer/internal/errors"
 	"github.com/chaminw/web-page-analyzer/internal/models"
+	"github.com/sirupsen/logrus"
 )
 
-type URLAnalyzerService struct{}
+type URLAnalyzerService struct {
+	logger *logrus.Logger
+}
 
-func NewURLAnalyzerService() *URLAnalyzerService {
-	return &URLAnalyzerService{}
+func NewURLAnalyzerService(l *logrus.Logger) *URLAnalyzerService {
+	logger := l
+	return &URLAnalyzerService{
+		logger: logger,
+	}
 }
 
 func (s *URLAnalyzerService) AnalyzeURL(urlStr string) (*models.AnalysisResult, error) {
+	s.logger.WithField("url", urlStr).Info("Starting URL analysis")
+
 	if !strings.HasPrefix(urlStr, "http://") && !strings.HasPrefix(urlStr, "https://") {
 		urlStr = "https://" + urlStr
 	}
@@ -33,20 +42,25 @@ func (s *URLAnalyzerService) AnalyzeURL(urlStr string) (*models.AnalysisResult, 
 
 	req, err := http.NewRequestWithContext(ctx, "GET", urlStr, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		s.logger.WithError(err).Error("Failed to create request")
+		return nil, errors.Wrap("REQUEST_CREATE_ERROR", "Failed to create request", err)
 	}
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; WebPageAnalyzer/1.0)")
 
-	// Make the request
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch URL: %w", err)
+		s.logger.WithError(err).Error("Failed to fetch URL")
+		return nil, errors.Wrap("URL_FETCH_ERROR", "Failed to fetch URL", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		description := getHTTPStatusDescription(resp.StatusCode)
+		s.logger.WithFields(logrus.Fields{
+			"statusCode":  resp.StatusCode,
+			"description": description,
+		}).Warn("Failure status code received")
 		return nil, &models.HTTPError{
 			StatusCode:  resp.StatusCode,
 			Description: description,
@@ -56,7 +70,8 @@ func (s *URLAnalyzerService) AnalyzeURL(urlStr string) (*models.AnalysisResult, 
 	// Parse HTML
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse HTML: %w", err)
+		s.logger.WithError(err).Error("Failed to parse HTML")
+		return nil, errors.Wrap("HTML_PARSE_ERROR", "Failed to parse HTML", err)
 	}
 
 	// Analyze the document
@@ -121,7 +136,7 @@ func (s *URLAnalyzerService) analyzeTitle(doc *goquery.Document) string {
 // Counts headings by level
 func (s *URLAnalyzerService) analyzeHeadings(doc *goquery.Document) map[string]int {
 	headings := make(map[string]int)
-	
+
 	for i := 1; i <= 6; i++ {
 		selector := fmt.Sprintf("h%d", i)
 		count := doc.Find(selector).Length()
@@ -129,7 +144,7 @@ func (s *URLAnalyzerService) analyzeHeadings(doc *goquery.Document) map[string]i
 			headings[fmt.Sprintf("h%d", i)] = count
 		}
 	}
-	
+
 	return headings
 }
 
@@ -147,7 +162,7 @@ func (as *URLAnalyzerService) analyzeLinks(doc *goquery.Document, baseURL string
 
 	// Find all links
 	links := doc.Find("a[href]")
-	
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -216,9 +231,9 @@ func (s *URLAnalyzerService) isLinkAccessible(urlStr string) bool {
 // Xhecks if the page contains a login form
 func (s *URLAnalyzerService) analyzeLoginForm(doc *goquery.Document) bool {
 	forms := doc.Find("form")
-	
+
 	var hasLoginForm bool
-	
+
 	forms.Each(func(i int, s *goquery.Selection) {
 		// Check for password field
 		if s.Find("input[type='password']").Length() > 0 {
@@ -232,7 +247,7 @@ func (s *URLAnalyzerService) analyzeLoginForm(doc *goquery.Document) bool {
 				"input[id*='login']",
 				"input[id*='username']",
 			}
-			
+
 			for _, selector := range usernameSelectors {
 				if s.Find(selector).Length() > 0 {
 					hasLoginForm = true
@@ -246,24 +261,19 @@ func (s *URLAnalyzerService) analyzeLoginForm(doc *goquery.Document) bool {
 }
 
 func getHTTPStatusDescription(statusCode int) string {
-	switch statusCode {
-	case 400:
-		return "Bad Request - The server cannot process the request due to a client error"
-	case 401:
-		return "Unauthorized - Authentication is required to access this resource"
-	case 403:
-		return "Forbidden - Access to this resource is denied"
-	case 404:
-		return "Not Found - The requested resource was not found on the server"
-	case 500:
-		return "Internal Server Error - The server encountered an unexpected condition"
-	case 502:
-		return "Bad Gateway - The server received an invalid response from an upstream server"
-	case 503:
-		return "Service Unavailable - The server is temporarily unable to handle the request"
-	case 504:
-		return "Gateway Timeout - The server did not receive a timely response from an upstream server"
-	default:
-		return fmt.Sprintf("HTTP %d - An error occurred while processing the request", statusCode)
+	descriptions := map[int]string{
+		400: "Bad Request - The server cannot process the request due to a client error",
+		401: "Unauthorized - Authentication is required to access this resource",
+		403: "Forbidden - Access to this resource is denied",
+		404: "Not Found - The requested resource was not found on the server",
+		500: "Internal Server Error - The server encountered an unexpected condition",
+		502: "Bad Gateway - The server received an invalid response from an upstream server",
+		503: "Service Unavailable - The server is temporarily unable to handle the request",
+		504: "Gateway Timeout - The server did not receive a timely response from an upstream server",
 	}
+
+	if desc, ok := descriptions[statusCode]; ok {
+		return desc
+	}
+	return "An error occurred while processing the request"
 }

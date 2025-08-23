@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/chaminw/web-page-analyzer/internal/models"
 	"github.com/chaminw/web-page-analyzer/internal/services"
 	"github.com/chaminw/web-page-analyzer/internal/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var (
-	logger *logrus.Logger
+	logger             *logrus.Logger
 	urlAnalyzerService *services.URLAnalyzerService
 )
 
@@ -45,21 +45,21 @@ func AnalyzeHandler(w http.ResponseWriter, r *http.Request) {
 	result, err := urlAnalyzerService.AnalyzeURL(urlStr)
 	if err != nil {
 		logger.WithError(err).WithField("url", urlStr).Error("Failed to analyze URL")
-		
+
 		if httpErr, ok := err.(*models.HTTPError); ok {
 			errorResponse := map[string]interface{}{
-				"error":        "Failed to analyze URL",
-				"status_code":  httpErr.StatusCode,
-				"description":  httpErr.Description,
-				"url":          urlStr,
+				"error":       "Failed to analyze URL",
+				"status_code": httpErr.StatusCode,
+				"description": httpErr.Description,
+				"url":         urlStr,
 			}
-			
+
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(errorResponse)
 			return
 		}
-		
+
 		http.Error(w, "Failed to analyze URL", http.StatusInternalServerError)
 		return
 	}
