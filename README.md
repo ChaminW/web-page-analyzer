@@ -32,8 +32,6 @@ web-page-analyzer/
 │   └── utils/             # Utility functions
 ├── web/                   # Web assets
 │   ├── static/            # Static assets (CSS, JS)
-│   ├── css/               # CSS files
-│   ├── js/                # JavaScript files
 │   └── templates/         # HTML templates
 ├── docs/                  # Documentation
 ├── Dockerfile             # Container configuration

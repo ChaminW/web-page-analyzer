@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Page Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Web Page Analyzer</h1>
+        </header>
+
+        <main class="main">
+            <form id="analyzeForm" class="analyze-form">
+                <div class="form-group">
+                    <label for="url">Enter URL to analyze:</label>
+                    <input 
+                        type="url" 
+                        id="url" 
+                        name="url" 
+                        placeholder="https://example.com"
+                        required
+                        class="url-input"
+                    >
+                </div>
+                <button type="submit" class="analyze-btn">
+                    <span class="btn-text">Analyze Page</span>
+                    <span class="btn-loading" style="display: none;">
+                        <div class="spinner"></div>
+                        Analyzing...
+                    </span>
+                </button>
+            </form>
+
+            <div id="results" class="results" style="display: none;">
+                <h2>Analysis Results</h2>
+                <div id="resultsContent" class="results-content"></div>
+            </div>
+
+            <div id="error" class="error" style="display: none;">
+                <h3>Error</h3>
+                <div id="errorContent" class="error-content"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
