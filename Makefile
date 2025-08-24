@@ -14,7 +14,6 @@ test:
 test-coverage:
 	go test -v -coverprofile=coverage.out ./internal/services/... ./internal/utils/...
 	go tool cover -html=coverage.out -o coverage.html
-	go tool cover -func=coverage.out
 
 fmt:
 	go fmt ./...

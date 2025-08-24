@@ -24,8 +24,8 @@ WORKDIR /app
 
 COPY --from=builder /app/main .
 
-COPY --from=builder /web/templates ./templates
-COPY --from=builder /web/static ./static
+COPY --from=builder /app/web/templates ./web/templates
+COPY --from=builder /app/web/static ./web/static
 
 RUN chown -R appuser:appgroup /app
 
