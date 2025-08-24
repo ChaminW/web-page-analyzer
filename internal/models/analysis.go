@@ -8,7 +8,7 @@ type HTTPError struct {
 }
 
 func (e *HTTPError) Error() string {
-	return "HTTP " + string(e.StatusCode) + ": " + e.Description
+	return "HTTP " + string(rune(e.StatusCode)) + ": " + e.Description
 }
 
 type AnalysisResult struct {
