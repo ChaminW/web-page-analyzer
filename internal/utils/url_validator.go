@@ -3,13 +3,13 @@ package utils
 import (
 	"net/url"
 	"regexp"
-	"strings"
 )
 
-// Validates if the given string is a valid URL
+var urlRegex = regexp.MustCompile(`^(http|https)://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(?:/[\w\-\./?%&=]*)?$`)
+
 func IsValidURL(urlStr string) bool {
-	if !strings.HasPrefix(urlStr, "http://") && !strings.HasPrefix(urlStr, "https://") {
-		urlStr = "https://" + urlStr
+	if !urlRegex.MatchString(urlStr) {
+		return false
 	}
 
 	u, err := url.Parse(urlStr)
@@ -17,10 +17,5 @@ func IsValidURL(urlStr string) bool {
 		return false
 	}
 
-	if u.Hostname() == "" {
-		return false
-	}
-
-	urlRegex := regexp.MustCompile(`^https?://[^\s/$.?#].[^\s]*$`)
-	return urlRegex.MatchString(urlStr)
+	return u.Scheme != "" && u.Host != ""
 }

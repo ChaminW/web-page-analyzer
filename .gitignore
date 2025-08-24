@@ -1,2 +1,6 @@
 .vscode
 bin
+
+# Test coverage
+coverage.out
+coverage.html
