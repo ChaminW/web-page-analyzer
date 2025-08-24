@@ -84,6 +84,43 @@ Before running this application, ensure you have:
    make run
    ```
 
+### Docker Deployment
+
+1. **Build and run with Docker**
+   ```bash
+   make docker-run
+   ```
+
+2. **Or manually with Docker**
+   ```bash
+   docker build -t web-page-analyzer .
+   docker run -p 8080:8080 web-page-analyzer
+   ```
+
+## Usage
+
+### Web Interface
+
+1. **Access the application**: Open your browser and navigate to `http://localhost:8080`
+2. **Enter a URL**: Type the URL of the web page you want to analyze
+3. **Submit**: Click the "Analyze Page" button
+4. **View Results**: The analysis results will be displayed below the form
+
+### API Endpoints
+
+- **GET /** - Home page with analysis form
+- **POST /analyze** - Analyze a web page
+  - **Request**: `url=sample.com`
+  - **Response**: JSON with analysis results
+
+### Example API Usage
+
+```bash
+curl -X POST http://localhost:8080/analyze \
+  -d "url=https://example.com" \
+  -H "Content-Type: application/x-www-form-urlencoded"
+```
+
 ## Testing
 
 ### Run Tests
@@ -95,6 +132,17 @@ make test
 # Run tests with coverage
 make test-coverage
 ```
+
+### Test Coverage
+
+The application maintains **70%+ test coverage** across packages. Tests include:
+
+- Unit tests for all analyzer functions
+- URL validation tests
+
+### Integration Tests
+
+Integration tests will be implemented in later phases
 
 ## Observability
 
